@@ -57,7 +57,11 @@ public class SnapChat {
         String name = "";
         ArrayList<String> conversacion  = new ArrayList<>();
         for (int i = reciclerView.size()-1 ; i >= 0 ; i--){
-            List<MobileElement> elements =  reciclerView.get(i).findElementsByClassName("android.widget.TextView");
+            reciclerView.get(i).
+            System.out.println( reciclerView.get(i).getText() );
+        }
+
+            /*List<MobileElement> elements =  reciclerView.get(i).findElementsByClassName("android.widget.TextView");
             //System.out.println(elements.size());
             if(elements.size() > 0){
                 name = elements.get(0).getText();
