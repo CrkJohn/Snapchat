@@ -44,11 +44,11 @@ public class SnapChat {
 
 
     public static void main(String[] args) throws MalformedURLException, InterruptedException {
-        //server = new Server();
-        //server.instanceServer();
-        //driver = server.getDriver();
-        //login();
-        //clickFirstChat();
+        server = new Server();
+        server.instanceServer();
+        driver = server.getDriver();
+        login();
+        clickFirstChat();
         iniSocket();
         chat();
     }
@@ -173,13 +173,21 @@ public class SnapChat {
                     BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                     while (true) {
-                        out.print(" Kha ");
-                        out.flush();
-                        System.out.println("Trying to read...");
-                        String in = stdIn.readLine();
-                        System.out.println(in);
+                        String coversation = reponseChat();
+                        if(coversation.length()>=0){
+                            out.print(coversation+ " envia");
+                            out.flush();
+                            System.out.println("Trying to read...");
+                            String in = stdIn.readLine();
+                            System.out.println(in);
+                            write(in);
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                LOGGER.info("ERROR EN EL SPLEEP DEL HILO DE CHAT");
+                            }
+                        }
                     }
-
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
