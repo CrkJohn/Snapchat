@@ -7,6 +7,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.interactions.internal.Coordinates;
 import org.springframework.beans.factory.annotation.Value;
 
+import javax.swing.plaf.basic.BasicDesktopIconUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
@@ -18,6 +19,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class SnapChat {
 
@@ -26,6 +28,12 @@ public class SnapChat {
     private static Thread sent;
     private static Thread receive;
     private static Socket socket;
+
+    private static Logger LOGGER = Logger.getLogger(String.valueOf(SnapChat.class));
+
+    private static List<MobileElement> recycleViewChildrens = null;
+
+    private static boolean garbageNextMessage = false;
 
 
     @Value("${user}")
@@ -36,57 +44,90 @@ public class SnapChat {
 
 
     public static void main(String[] args) throws MalformedURLException, InterruptedException {
-        server = new Server();
-        server.instanceServer();
-        driver = server.getDriver();
-        login();
-        clickFirstChat();
-        //iniSocket();
+        //server = new Server();
+        //server.instanceServer();
+        //driver = server.getDriver();
+        //login();
+        //clickFirstChat();
+        iniSocket();
         chat();
-        while(true){
-            listChat();
-            Thread.sleep(1000);
-        }
-
-
     }
 
-    private static void listChat() {
-        System.out.println("entro");
-        List<MobileElement> reciclerView = driver.findElementByClassName("androidx.recyclerview.widget.RecyclerView").findElementsByClassName("android.widget.LinearLayout");
-        String name = "";
-        ArrayList<String> conversacion  = new ArrayList<>();
-        for (int i = reciclerView.size()-1 ; i >= 0 ; i--){
-            reciclerView.get(i).
-            System.out.println( reciclerView.get(i).getText() );
-        }
+    private static String reponseChat() {
+        if (existParentsElements(ComponentName.recyleviewlist)) {
+            recycleViewChildrens = driver.findElements(By.xpath(ComponentName.recyleviewlist));
+            int mobileElementIth = preProcess();
+            if (mobileElementIth == -1) return "";
+            while (mobileElementIth >= 0) {
+                MobileElement mb = recycleViewChildrens.get(mobileElementIth);
+                String className_ = (mb.getAttribute("className"));
+                String className[] = className_.split("\\.");
+                if (className.length == 3) {
+                    LOGGER.info("Se va a procesar " + className[2]);
+                    if (className[2].equals(ComponentName.LINEAR_LAYOUT)) {
+                        if (isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.TEXT_VIEW)) {
+                            MobileElement textView = recycleViewChildrens.get(mobileElementIth + 1);
+                            String textOfView = textView.getAttribute("className");
+                            System.out.println("Attribute " + textOfView + " " + textView.getText());
+                            mobileElementIth++;
+                            if (textView.getText().equals("Yo")) {
+                                garbageNextMessage = true;
+                            }
+                        } else if (isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.VIEW)) {
+                            String message = "";
+                            do {
+                                mobileElementIth += 2; // isJavaClass, next element is Vies and other element, we wait that will be javaClass
+                                MobileElement javaClass = recycleViewChildrens.get(mobileElementIth);
+                                if (javaClass.getAttribute("className").equals("javaClass")) {
+                                    message = message + javaClass.getText() + '\n';
+                                }
+                            } while (isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.VIEW));
+                            if (garbageNextMessage) {
+                                LOGGER.info(message.substring(0, message.length() - 1));
+                                garbageNextMessage = false;
+                            }
+                            return message;
+                        }
+                    }
 
-            /*List<MobileElement> elements =  reciclerView.get(i).findElementsByClassName("android.widget.TextView");
-            //System.out.println(elements.size());
-            if(elements.size() > 0){
-                name = elements.get(0).getText();
-                break;
+
+                }
+                mobileElementIth++;
             }
-            //findElementByClassName("javaClass").getText()
-            //conversacion.add(reciclerView.get(i).getTagName());
-            System.out.println(reciclerView.get(i).getTagName());
         }
-        if(!name.equals("Yo")){
-            reciclerView.get(reciclerView.size()-1).findElementByClassName("javaClass").getText();
-            System.out.println(conversacion);
+        return "";
+    }
+
+
+
+    private static int preProcess(){
+       for(int i = recycleViewChildrens.size()-1; i>=0 ; i--){
+            if(recycleViewChildrens.get(i).getAttribute("className").contains(ComponentName.TEXT_VIEW)){
+                if(i-1>=0 && recycleViewChildrens.get(i).getAttribute("className").contains(ComponentName.LINEAR_LAYOUT)){
+                    if(i+1<recycleViewChildrens.size() && isXComponent(i,ComponentName.LINEAR_LAYOUT)){
+                        return i;
+                    }
+                }
+            }
         }
-
-
-
-        /*int lastIndex = reciclerView.size();
-        System.out.println(lastIndex);
-        String user = reciclerView.get(lastIndex-2).findElementByClassName("android.widget.TextView").getText();
-        System.out.println(user);
-        System.out.println(user.equals("Yo"));
-        user.equals("Yo");*/
-
+        return -1;
 
     }
+
+    private static boolean isValid(int i){
+        return ((i+1 >=0) ? false : true);
+    }
+
+    private static boolean isXComponent(int i , String component){
+        String className[] = recycleViewChildrens.get(i+1).getAttribute("className").split("\\.");
+        if(className.length ==3 ){
+            return className[2].equals(component);
+        }
+        return false;
+    }
+
+
+
 
     private static void iniSocket() {
         try {
@@ -110,9 +151,20 @@ public class SnapChat {
         }
     }
 
+
+    private static boolean existParentsElements(String nameElment){
+        try{
+            List<MobileElement> recycleViewChildrens = driver.findElements(By.xpath(ComponentName.recyleviewlist));
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+
+    }
+
     private static void chat() {
-        write("Esto es un bot");
-        /*sent = new Thread(
+        //write("Esto es un bot");
+        sent = new Thread(
                 new Runnable() {
             @Override
             public void run() {
@@ -121,7 +173,7 @@ public class SnapChat {
                     BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                     while (true) {
-                        out.print(userInput.readLine() + "\r\n");
+                        out.print(" Kha ");
                         out.flush();
                         System.out.println("Trying to read...");
                         String in = stdIn.readLine();
@@ -141,7 +193,6 @@ public class SnapChat {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        */
     }
 
     private static void clickFirstChat() throws InterruptedException {

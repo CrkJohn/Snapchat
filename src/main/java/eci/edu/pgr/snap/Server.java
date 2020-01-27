@@ -22,12 +22,11 @@ public class Server {
         desiredCapabilities.setCapability(MobileCapabilityType.PLATFORM_VERSION, "5.0.2");
         desiredCapabilities.setCapability(MobileCapabilityType.DEVICE_NAME, "LG Magna LTE");
         desiredCapabilities.setCapability(MobileCapabilityType.UDID, "4TIBNREMDAMFPB9L");
-        desiredCapabilities.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 300);
+        desiredCapabilities.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 500);
         desiredCapabilities.setCapability("takesScreenshot", true);
         desiredCapabilities.setCapability(AndroidMobileCapabilityType.APP_ACTIVITY, "com.snapchat.android.LandingPageActivity");
         desiredCapabilities.setCapability(AndroidMobileCapabilityType.APP_PACKAGE, "com.snapchat.android");
-        desiredCapabilities.setCapability("app", "C:\\Users\\admin\\Documents\\Snapchat\\src\\test\\resources" +
-                "\\Snapchat.apk");
+        desiredCapabilities.setCapability("app", "C:\\Users\\user\\Documents\\Snapchat\\src\\main\\resources\\Snapchat.apk");
 
     }
 
