@@ -2,6 +2,7 @@ package eci.edu.pgr.snap;
 
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
+import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.remote.AndroidMobileCapabilityType;
 import io.appium.java_client.remote.MobileCapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -33,7 +34,7 @@ public class Server {
 
     public void instanceServer() throws MalformedURLException {
         URL url = new URL("http://127.0.0.1:4723/wd/hub");
-        driver = new AppiumDriver<MobileElement>(url,desiredCapabilities);
+        driver = new AndroidDriver<MobileElement>(url,desiredCapabilities);
         driver.manage().timeouts().implicitlyWait(40, TimeUnit.SECONDS);
     }
 

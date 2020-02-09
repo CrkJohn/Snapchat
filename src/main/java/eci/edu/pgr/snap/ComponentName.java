@@ -10,4 +10,6 @@ public class ComponentName {
 
     public static String VIEW = "View";
 
+    public static String  RELATIVE_LAYOUT= "RelativeLayout";
+
 }

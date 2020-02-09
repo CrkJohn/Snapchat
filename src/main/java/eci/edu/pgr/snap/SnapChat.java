@@ -2,18 +2,20 @@ package eci.edu.pgr.snap;
 
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
+import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.nativekey.AndroidKey;
+import io.appium.java_client.android.nativekey.KeyEvent;
 import org.apache.commons.collections.bag.SynchronizedSortedBag;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.interactions.internal.Coordinates;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.swing.plaf.basic.BasicDesktopIconUI;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -115,6 +117,13 @@ public class SnapChat {
                             lastMessage = message;
                             message = "";
                             return lastMessage;
+                        }else if(isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.RELATIVE_LAYOUT)){
+                                //HAY IMAGEN
+                            try {
+                                getScreenshot();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
@@ -124,6 +133,12 @@ public class SnapChat {
             }
         }
         return "";
+    }
+
+    public static void getScreenshot() throws IOException {
+        System.out.println("Capturing the snapshot of the page ");
+        File srcFiler=((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+        FileUtils.copyFile(srcFiler, new File("C:\\Users\\user\\Documents\\"));
     }
 
     private static String splitElement(String className){
@@ -174,16 +189,7 @@ public class SnapChat {
 
     private static void write(String res){
         driver.findElement(By.id("com.snapchat.android:id/chat_input_text_field")).sendKeys(res);
-        Robot r = null;
-        try {
-            r = new Robot();
-            for (int i = 0; i < 3 ; i++) {
-                r.keyPress(KeyEvent.VK_ENTER);
-                r.keyRelease(KeyEvent.VK_ENTER);
-            }
-        } catch (AWTException e) {
-            e.printStackTrace();
-        }
+        ((AndroidDriver) driver).pressKey(new KeyEvent(AndroidKey.ENTER));
     }
 
 
@@ -215,18 +221,13 @@ public class SnapChat {
                             System.out.println("Trying to read...");
                             String in = stdIn.readLine();
                             System.out.println(in);
-                            write(in);try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                LOGGER.info("ERROR EN EL SPLEEP DEL HILO DE CHAT");
-                            }
+                            write(in);
 
-                        }else{
-                            try {
-                                Thread.sleep(50000);
-                            } catch (InterruptedException e) {
-                                LOGGER.info("ERROR EN EL SPLEEP DEL HILO DE CHAT");
-                            }
+                        }
+                        try {
+                            Thread.sleep(50000);
+                        } catch (InterruptedException e) {
+                            LOGGER.info("ERROR EN EL SPLEEP DEL HILO DE CHAT");
                         }
 
 
