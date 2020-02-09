@@ -28,7 +28,7 @@ public class SnapChat {
     private static Thread sent;
     private static Thread receive;
     private static Socket socket;
-
+    private static Process p = null;
     private static Logger LOGGER = Logger.getLogger(String.valueOf(SnapChat.class));
 
     private static List<MobileElement> recycleViewChildrens = null;
@@ -44,6 +44,7 @@ public class SnapChat {
 
 
     public static void main(String[] args) throws MalformedURLException, InterruptedException {
+        //runServerAppium();
         server = new Server();
         server.instanceServer();
         driver = server.getDriver();
@@ -53,9 +54,24 @@ public class SnapChat {
         chat();
     }
 
+    private static void runServerAppium() {
+        ProcessBuilder builder = new ProcessBuilder(
+                "cmd.exe", "/c", "appium");
+        builder.redirectErrorStream(true);
+        try {
+            p = builder.start();
+        } catch (IOException e) {
+            System.err.println("ERROR A CREAR SERVIO DE APPIUM");
+            e.printStackTrace();
+        }
+    }
+
+
     private static String reponseChat() {
         if (existParentsElements(ComponentName.recyleviewlist)) {
             recycleViewChildrens = driver.findElements(By.xpath(ComponentName.recyleviewlist));
+            if(recycleViewChildrens.size()== 0 || recycleViewChildrens == null) return "";
+            String lastMessage = "";
             int mobileElementIth = preProcess();
             if (mobileElementIth == -1) return "";
             while (mobileElementIth >= 0) {
@@ -76,17 +92,29 @@ public class SnapChat {
                         } else if (isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.VIEW)) {
                             String message = "";
                             do {
-                                mobileElementIth += 2; // isJavaClass, next element is Vies and other element, we wait that will be javaClass
+                                mobileElementIth += 2;// isJavaClass, next element is Vies and other element, we wait that will be javaClass
                                 MobileElement javaClass = recycleViewChildrens.get(mobileElementIth);
                                 if (javaClass.getAttribute("className").equals("javaClass")) {
                                     message = message + javaClass.getText() + '\n';
                                 }
-                            } while (isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.VIEW));
+                                if(isValid(mobileElementIth) &&
+                                        isXComponent(mobileElementIth, ComponentName.LINEAR_LAYOUT) &&
+                                        isXComponent(mobileElementIth+1, ComponentName.VIEW)){
+                                    mobileElementIth++;
+                                }else{
+                                    break;
+                                }
+                            } while (isValid(mobileElementIth));
                             if (garbageNextMessage) {
                                 LOGGER.info(message.substring(0, message.length() - 1));
                                 garbageNextMessage = false;
                             }
-                            return message;
+                            if(lastMessage.equals(message)){
+                                return "";
+                            }
+                            lastMessage = message;
+                            message = "";
+                            return lastMessage;
                         }
                     }
 
@@ -98,14 +126,20 @@ public class SnapChat {
         return "";
     }
 
+    private static String splitElement(String className){
+        String className_[] = className.split("\\.");
+        return className_[className_.length-1];
+    }
 
 
     private static int preProcess(){
        for(int i = recycleViewChildrens.size()-1; i>=0 ; i--){
-            if(recycleViewChildrens.get(i).getAttribute("className").contains(ComponentName.TEXT_VIEW)){
-                if(i-1>=0 && recycleViewChildrens.get(i).getAttribute("className").contains(ComponentName.LINEAR_LAYOUT)){
-                    if(i+1<recycleViewChildrens.size() && isXComponent(i,ComponentName.LINEAR_LAYOUT)){
-                        return i;
+            String attribute = recycleViewChildrens.get(i).getAttribute("className");
+            if(splitElement(attribute).equals(ComponentName.TEXT_VIEW)){
+                if(i-1>=0 && i+1 <recycleViewChildrens.size()){
+                    String attributeBefore =   recycleViewChildrens.get(i-1).getAttribute("className");
+                    if(splitElement(attributeBefore).equals(ComponentName.LINEAR_LAYOUT) && isXComponent(i,ComponentName.LINEAR_LAYOUT)){
+                        return i-1;
                     }
                 }
             }
@@ -115,18 +149,17 @@ public class SnapChat {
     }
 
     private static boolean isValid(int i){
-        return ((i+1 >=0) ? false : true);
+        return ((i+1 < recycleViewChildrens.size()) ? true : false);
     }
 
     private static boolean isXComponent(int i , String component){
+        if(!isValid(i)) return  false;
         String className[] = recycleViewChildrens.get(i+1).getAttribute("className").split("\\.");
         if(className.length ==3 ){
             return className[2].equals(component);
         }
         return false;
     }
-
-
 
 
     private static void iniSocket() {
@@ -144,8 +177,10 @@ public class SnapChat {
         Robot r = null;
         try {
             r = new Robot();
-            r.keyPress(KeyEvent.VK_ENTER);
-            r.keyRelease(KeyEvent.VK_ENTER);
+            for (int i = 0; i < 3 ; i++) {
+                r.keyPress(KeyEvent.VK_ENTER);
+                r.keyRelease(KeyEvent.VK_ENTER);
+            }
         } catch (AWTException e) {
             e.printStackTrace();
         }
@@ -174,19 +209,27 @@ public class SnapChat {
                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                     while (true) {
                         String coversation = reponseChat();
-                        if(coversation.length()>=0){
-                            out.print(coversation+ " envia");
+                        if(coversation.length()>0){
+                            out.print(coversation);
                             out.flush();
                             System.out.println("Trying to read...");
                             String in = stdIn.readLine();
                             System.out.println(in);
-                            write(in);
+                            write(in);try {
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                LOGGER.info("ERROR EN EL SPLEEP DEL HILO DE CHAT");
+                            }
+
+                        }else{
                             try {
-                                Thread.sleep(1000);
+                                Thread.sleep(50000);
                             } catch (InterruptedException e) {
                                 LOGGER.info("ERROR EN EL SPLEEP DEL HILO DE CHAT");
                             }
                         }
+
+
                     }
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
