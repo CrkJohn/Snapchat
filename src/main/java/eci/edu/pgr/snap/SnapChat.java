@@ -51,9 +51,30 @@ public class SnapChat {
         server.instanceServer();
         driver = server.getDriver();
         login();
+        //addFriend();
         clickFirstChat();
         iniSocket();
         chat();
+    }
+
+    private static void addFriend() throws InterruptedException {
+        driver.findElement(By.id("com.snapchat.android:id/neon_add_friend_button_container")).click();
+        Thread.sleep(20000);
+        List<MobileElement> addFriends =  driver.findElements(By.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.snapchat.android:id/add_friends_recycler_view']//*"));
+        boolean add = false;
+        try{
+            add  = addFriends.get(2).getText().equals("Me añadieron");
+            System.out.println(addFriends.get(2).getText());
+        }catch (Exception e){
+            LOGGER.info("NO SE ENCONTRO AMIGO A AÑADIR");
+        }
+        if(add){
+            addFriends.get(4).click();
+        }
+
+
+
+
     }
 
     private static void runServerAppium() {
@@ -74,6 +95,7 @@ public class SnapChat {
             recycleViewChildrens = driver.findElements(By.xpath(ComponentName.recyleviewlist));
             if(recycleViewChildrens.size()== 0 || recycleViewChildrens == null) return "";
             String lastMessage = "";
+            String nameStranger = "";
             int mobileElementIth = preProcess();
             if (mobileElementIth == -1) return "";
             while (mobileElementIth >= 0) {
@@ -90,6 +112,9 @@ public class SnapChat {
                             mobileElementIth++;
                             if (textView.getText().equals("Yo")) {
                                 garbageNextMessage = true;
+
+                            }else {
+                                nameStranger  = textView.getText();
                             }
                         } else if (isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.VIEW)) {
                             String message = "";
@@ -116,9 +141,10 @@ public class SnapChat {
                             }
                             lastMessage = message;
                             message = "";
-                            return lastMessage;
+                            return nameStranger+ ":"+lastMessage;
                         }else if(isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.RELATIVE_LAYOUT)){
                                 //HAY IMAGEN
+
                             try {
                                 getScreenshot();
                             } catch (IOException e) {
