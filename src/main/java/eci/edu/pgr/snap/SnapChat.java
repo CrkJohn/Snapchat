@@ -19,8 +19,10 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class SnapChat {
@@ -30,6 +32,9 @@ public class SnapChat {
     private static Thread sent;
     private static Thread receive;
     private static Socket socket;
+
+    private static boolean carpeta = false;
+    private static String nombreCaperta ="";
     private static Process p = null;
     private static Logger LOGGER = Logger.getLogger(String.valueOf(SnapChat.class));
 
@@ -39,7 +44,7 @@ public class SnapChat {
 
 
     @Value("${user}")
-    private static String user = "p_ramirezxxx";
+    private static String user = "p_ramirez2xxx";
 
     @Value("${psw}")
     private static String psw = "pgr20191";
@@ -93,12 +98,16 @@ public class SnapChat {
     private static String reponseChat() {
         if (existParentsElements(ComponentName.recyleviewlist)) {
             recycleViewChildrens = driver.findElements(By.xpath(ComponentName.recyleviewlist));
+            for(MobileElement mb :recycleViewChildrens ){
+                System.out.println( mb.getAttribute("className"));
+            }
             if(recycleViewChildrens.size()== 0 || recycleViewChildrens == null) return "";
             String lastMessage = "";
             String nameStranger = "";
+            String finalMsg = "";
             int mobileElementIth = preProcess();
             if (mobileElementIth == -1) return "";
-            while (mobileElementIth >= 0) {
+            while (mobileElementIth >= 0  && mobileElementIth < recycleViewChildrens.size()) {
                 MobileElement mb = recycleViewChildrens.get(mobileElementIth);
                 String className_ = (mb.getAttribute("className"));
                 String className[] = className_.split("\\.");
@@ -141,30 +150,45 @@ public class SnapChat {
                             }
                             lastMessage = message;
                             message = "";
-                            return nameStranger+ ":"+lastMessage;
-                        }else if(isValid(mobileElementIth) && isXComponent(mobileElementIth, ComponentName.RELATIVE_LAYOUT)){
-                                //HAY IMAGEN
-
-                            try {
-                                getScreenshot();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            finalMsg = nameStranger+ ":"+lastMessage;
                         }
+                        try {
+                            if(!nameStranger.isEmpty()){
+                                getScreenshot(nameStranger);
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
                     }
 
 
                 }
                 mobileElementIth++;
             }
+            if(finalMsg.length() > 3){
+                return finalMsg;
+            }
         }
         return "";
     }
 
-    public static void getScreenshot() throws IOException {
+    public static void getScreenshot(String nameStranger) throws IOException {
         System.out.println("Capturing the snapshot of the page ");
+        if(nombreCaperta.isEmpty()){
+            nombreCaperta = "C:\\Users\\user\\Documents\\ImagesSP\\" + LocalDateTime.now().toString().replace(":","_").replace("-","_").replace(" ","_").replace(".","_");
+        }
+        if(!carpeta){
+            File directorio=new File(nombreCaperta);
+            directorio.mkdir();
+            carpeta = true;
+        }
+
+        UUID uuid = UUID.randomUUID();
+        String randomUUIDString = uuid.toString();
         File srcFiler=((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(srcFiler, new File("C:\\Users\\user\\Documents\\"));
+        FileUtils.copyFile(srcFiler, new File(nombreCaperta+ "\\"+ randomUUIDString + ".jpg"));
     }
 
     private static String splitElement(String className){
@@ -281,6 +305,7 @@ public class SnapChat {
     }
 
     private static void login() throws InterruptedException {
+        Thread.sleep(2000);
         driver.findElement(By.id("com.snapchat.android:id/login_and_signup_page_fragment_login_button")).click();
         driver.findElement(By.id("com.snapchat.android:id/username_or_email_field")).setValue(user);
         driver.findElement(By.id("com.snapchat.android:id/password_field")).setValue(psw);
