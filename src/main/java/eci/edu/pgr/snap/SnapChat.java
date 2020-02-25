@@ -151,6 +151,15 @@ public class SnapChat {
                             lastMessage = message;
                             message = "";
                             finalMsg = nameStranger+ ":"+lastMessage;
+                            try {
+                                if(!nameStranger.isEmpty()){
+                                    getScreenshot(nameStranger);
+                                }
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            return finalMsg;
                         }
                         try {
                             if(!nameStranger.isEmpty()){
@@ -166,10 +175,9 @@ public class SnapChat {
 
                 }
                 mobileElementIth++;
+
             }
-            if(finalMsg.length() > 3){
-                return finalMsg;
-            }
+
         }
         return "";
     }
@@ -177,7 +185,7 @@ public class SnapChat {
     public static void getScreenshot(String nameStranger) throws IOException {
         System.out.println("Capturing the snapshot of the page ");
         if(nombreCaperta.isEmpty()){
-            nombreCaperta = "C:\\Users\\user\\Documents\\ImagesSP\\" + LocalDateTime.now().toString().replace(":","_").replace("-","_").replace(" ","_").replace(".","_");
+                nombreCaperta = "C:\\Users\\user\\Documents\\ImagesSP\\" + LocalDateTime.now().toString().replace(":","_").replace("-","_").replace(" ","_").replace(".","_");
         }
         if(!carpeta){
             File directorio=new File(nombreCaperta);
