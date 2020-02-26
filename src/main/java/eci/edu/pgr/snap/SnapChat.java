@@ -56,12 +56,13 @@ public class SnapChat {
         server.instanceServer();
         driver = server.getDriver();
         login();
+        iniSocket();
         //addFriend();
         int attempts = 0;
         do{
             try{
                 haveSnap();
-                Thread.sleep(10000);
+                Thread.sleep(1000);
                 attempts++;
             }catch (Exception e){
                 LOGGER.info("Esperando un nuevo chat");
@@ -70,9 +71,11 @@ public class SnapChat {
 
         if(newChat){
             clickFirstChat();
-            iniSocket();
             chat();
+        }else{
+            chat("bye");
         }
+
     }
 
     private static void haveSnap() {
@@ -107,29 +110,6 @@ public class SnapChat {
 
 
     }
-
-    private static void addFriend() throws InterruptedException {
-        driver.findElement(By.id("com.snapchat.android:id/neon_add_friend_button_container")).click();
-        Thread.sleep(20000);
-        List<MobileElement> addFriends =  driver.findElements(By.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.snapchat.android:id/add_friends_recycler_view']//*"));
-        boolean add = false;
-        try{
-            add  = addFriends.get(2).getText().equals("Me añadieron");
-            System.out.println(addFriends.get(2).getText());
-        }catch (Exception e){
-            LOGGER.info("NO SE ENCONTRO AMIGO A AÑADIR");
-        }
-        if(add){
-            addFriends.get(4).click();
-        }
-
-
-
-
-    }
-
-
-
 
     private static String reponseChat() {
         if (existParentsElements(ComponentName.recyleviewlist)) {
@@ -295,6 +275,32 @@ public class SnapChat {
             return false;
         }
 
+    }
+
+
+    private static void chat(String bye) {
+        sent = new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            BufferedReader stdIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                            out.print("NONE:"+bye);
+                            out.flush();
+                            System.out.println("Bye no hubo nueva conversacion...");
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+                });
+        sent.start();
+        try {
+            sent.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void chat() {
