@@ -30,12 +30,12 @@ public class SnapChat {
     private static Server server;
     private static AppiumDriver<MobileElement> driver;
     private static Thread sent;
-    private static Thread receive;
     private static Socket socket;
 
     private static boolean carpeta = false;
     private static String nombreCaperta ="";
-    private static Process p = null;
+    private static boolean newChat = false;
+
     private static Logger LOGGER = Logger.getLogger(String.valueOf(SnapChat.class));
 
     private static List<MobileElement> recycleViewChildrens = null;
@@ -57,9 +57,55 @@ public class SnapChat {
         driver = server.getDriver();
         login();
         //addFriend();
-        clickFirstChat();
-        iniSocket();
-        chat();
+        int attempts = 0;
+        do{
+            try{
+                haveSnap();
+                Thread.sleep(10000);
+                attempts++;
+            }catch (Exception e){
+                LOGGER.info("Esperando un nuevo chat");
+            }
+        }while(!newChat && attempts<=10);
+
+        if(newChat){
+            clickFirstChat();
+            iniSocket();
+            chat();
+        }
+    }
+
+    private static void haveSnap() {
+        List<MobileElement> snaps = driver.findElements(By.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.snapchat.android:id/recycler_view']//*"));
+
+        for (MobileElement mb : snaps) {
+            System.out.println(mb.getAttribute("className"));
+        }
+        if (snaps.size() > 4) {
+            String typeMsg = snaps.get(3).getText();
+            if (typeMsg.contains("Snap nuevo")) {
+                 takeScreenShootSnap();
+                 newChat = true;
+            } else if (typeMsg.contains("Chat nuevo")) {
+                newChat = true;
+            }
+        }
+        return;
+    }
+
+    private static void takeScreenShootSnap() {
+        List<MobileElement> ele = driver.findElements(By.className("android.view.View"));
+        ele.get(0).click();
+
+        try {
+            getScreenshot();
+            ele.get(0).click();
+            LOGGER.info("Se tomo foto del snap");
+        } catch (Exception e) {
+            LOGGER.info("Hubo un error al tomar la foto del SNAP");
+        }
+
+
     }
 
     private static void addFriend() throws InterruptedException {
@@ -82,17 +128,7 @@ public class SnapChat {
 
     }
 
-    private static void runServerAppium() {
-        ProcessBuilder builder = new ProcessBuilder(
-                "cmd.exe", "/c", "appium");
-        builder.redirectErrorStream(true);
-        try {
-            p = builder.start();
-        } catch (IOException e) {
-            System.err.println("ERROR A CREAR SERVIO DE APPIUM");
-            e.printStackTrace();
-        }
-    }
+
 
 
     private static String reponseChat() {
@@ -153,7 +189,7 @@ public class SnapChat {
                             finalMsg = nameStranger+ ":"+lastMessage;
                             try {
                                 if(!nameStranger.isEmpty()){
-                                    getScreenshot(nameStranger);
+                                    getScreenshot();
                                 }
 
                             } catch (IOException e) {
@@ -163,7 +199,7 @@ public class SnapChat {
                         }
                         try {
                             if(!nameStranger.isEmpty()){
-                                getScreenshot(nameStranger);
+                                getScreenshot();
                             }
 
                         } catch (IOException e) {
@@ -182,7 +218,7 @@ public class SnapChat {
         return "";
     }
 
-    public static void getScreenshot(String nameStranger) throws IOException {
+    public static void getScreenshot() throws IOException {
         System.out.println("Capturing the snapshot of the page ");
         if(nombreCaperta.isEmpty()){
                 nombreCaperta = "C:\\Users\\user\\Documents\\ImagesSP\\" + LocalDateTime.now().toString().replace(":","_").replace("-","_").replace(" ","_").replace(".","_");
