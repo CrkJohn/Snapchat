@@ -19,16 +19,16 @@ public class Server {
 
     public Server() {
         desiredCapabilities = new DesiredCapabilities();
+        desiredCapabilities.setCapability("ignoreUnimportantViews" , true);
         desiredCapabilities.setCapability(MobileCapabilityType.PLATFORM_NAME, "ANDROID");
-        desiredCapabilities.setCapability(MobileCapabilityType.PLATFORM_VERSION, "7.1.1");
-        desiredCapabilities.setCapability(MobileCapabilityType.DEVICE_NAME, "Moto E__4__Plus");
-        desiredCapabilities.setCapability(MobileCapabilityType.UDID, "ZL33H2KDSJ");
+        desiredCapabilities.setCapability(MobileCapabilityType.PLATFORM_VERSION, "5.0.2");
+        desiredCapabilities.setCapability(MobileCapabilityType.DEVICE_NAME, "LG Magna LTE");
+        desiredCapabilities.setCapability(MobileCapabilityType.UDID, "4TIBNREMDAMFPB9L");
         desiredCapabilities.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 500);
         desiredCapabilities.setCapability("takesScreenshot", true);
-
         desiredCapabilities.setCapability(AndroidMobileCapabilityType.APP_ACTIVITY, "com.snapchat.android.LandingPageActivity");
         desiredCapabilities.setCapability(AndroidMobileCapabilityType.APP_PACKAGE, "com.snapchat.android");
-        desiredCapabilities.setCapability("app", "C:\\Users\\user\\Documents\\Snapchat\\src\\main\\resources\\Snapchat.apk");
+        desiredCapabilities.setCapability("app", "C:\\Users\\PERSONAL\\Documents\\PGR\\Snapchat\\src\\main\\resources\\Snapchat.apk");
     }
 
 

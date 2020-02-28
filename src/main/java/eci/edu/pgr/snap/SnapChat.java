@@ -44,7 +44,7 @@ public class SnapChat {
 
 
     @Value("${user}")
-    private static String user = "p_ramirez2xxx";
+    private static String user = "p_ramirezxxx";
 
     @Value("${psw}")
     private static String psw = "pgr20191";
@@ -62,10 +62,13 @@ public class SnapChat {
         do{
             try{
                 haveSnap();
+            }catch (Exception e){
+                //e.printStackTrace();
+                LOGGER.info("Esperando un nuevo chat");
+            }
+            finally{
                 Thread.sleep(1000);
                 attempts++;
-            }catch (Exception e){
-                LOGGER.info("Esperando un nuevo chat");
             }
         }while(!newChat && attempts<=10);
 
@@ -79,16 +82,23 @@ public class SnapChat {
     }
 
     private static void haveSnap() {
-        List<MobileElement> snaps = driver.findElements(By.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.snapchat.android:id/recycler_view']//*"));
-
+        MobileElement mbb = driver.findElement(By.className("androidx.recyclerview.widget.RecyclerView"));
+        MobileElement mbb2 = mbb.findElement(By.className("android.widget.FrameLayout"));
+        List<MobileElement> snaps = mbb2.findElementsByClassName("javaClass");
+        //List<MobileElement> snaps = driver.findElements(By.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.snapchat.android:id/recycler_view']//*"));
         for (MobileElement mb : snaps) {
             System.out.println(mb.getAttribute("className"));
         }
-        if (snaps.size() > 4) {
-            String typeMsg = snaps.get(3).getText();
+        if (snaps != null & snaps.size() > 0) {
+            String typeMsg = snaps.get(1).getText();
             if (typeMsg.contains("Snap nuevo")) {
                  takeScreenShootSnap();
                  newChat = true;
+                 try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    LOGGER.info("ERROR EN EL SPLEEP DEL HILO DE CHAT");
+                }
             } else if (typeMsg.contains("Chat nuevo")) {
                 newChat = true;
             }
@@ -201,7 +211,7 @@ public class SnapChat {
     public static void getScreenshot() throws IOException {
         System.out.println("Capturing the snapshot of the page ");
         if(nombreCaperta.isEmpty()){
-                nombreCaperta = "C:\\Users\\user\\Documents\\ImagesSP\\" + LocalDateTime.now().toString().replace(":","_").replace("-","_").replace(" ","_").replace(".","_");
+                nombreCaperta = "D:\\snap-screen\\capture" + LocalDateTime.now().toString().replace(":","_").replace("-","_").replace(" ","_").replace(".","_");
         }
         if(!carpeta){
             File directorio=new File(nombreCaperta);
