@@ -73,6 +73,7 @@ public class SnapChat {
         }while(!newChat && attempts<=10);
 
         if(newChat){
+            LOGGER.info("Se encontro un nuevo chat");
             clickFirstChat();
             chat();
         }else{
@@ -182,7 +183,8 @@ public class SnapChat {
                                     getScreenshot();
                                 }
 
-                            } catch (IOException e) {
+                            } catch (IOException | InterruptedException e) {
+                                LOGGER.info("ERROR AL TOMAR LA FOTO");
                                 e.printStackTrace();
                             }
                             return finalMsg;
@@ -192,7 +194,8 @@ public class SnapChat {
                                 getScreenshot();
                             }
 
-                        } catch (IOException e) {
+                        } catch (IOException | InterruptedException e) {
+                            LOGGER.info("ERROR AL TOMAR LA FOTO");
                             e.printStackTrace();
                         }
 
@@ -208,7 +211,7 @@ public class SnapChat {
         return "";
     }
 
-    public static void getScreenshot() throws IOException {
+    public static void getScreenshot() throws IOException, InterruptedException {
         System.out.println("Capturing the snapshot of the page ");
         if(nombreCaperta.isEmpty()){
                 nombreCaperta = "D:\\snap-screen\\capture" + LocalDateTime.now().toString().replace(":","_").replace("-","_").replace(" ","_").replace(".","_");
@@ -218,7 +221,7 @@ public class SnapChat {
             directorio.mkdir();
             carpeta = true;
         }
-
+        Thread.sleep(1000);
         UUID uuid = UUID.randomUUID();
         String randomUUIDString = uuid.toString();
         File srcFiler=((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
