@@ -46,10 +46,13 @@ C:\Users\user>appium
 
 To be able to manipulate the cell phone, you must activate the mode developed in the cell phone,[HERE](https://www.howtogeek.com/129728/how-to-access-the-developer-options-menu-and-enable-usb-debugging-on-android-4.2/) is an example of how you would do it 
 
+### Download project and download its dependencies and compile
 
-### Before using the project
-
-
+```console
+pgr@crk:~$ git clone https://github.com/CrkJohn/Snapchat.git
+pgr@crk:~$ cd Snapchat
+pgr@crk:~$ mvn package
+```
 
 
 
