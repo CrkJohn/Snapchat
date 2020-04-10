@@ -7,7 +7,7 @@
 ![](https://img.shields.io/badge/python-3.6.2-brightgreen.svg)  ![](https://img.shields.io/badge/tensorflow-1.4.0-yellowgreen.svg?sanitize=true)
 
 ## Project Objectives
-This project aims to design and build a Bot capable of manipulating, detecting input and output and responding to cybercriminals in snapchat
+
 
 ## How to install & Set Up
 
